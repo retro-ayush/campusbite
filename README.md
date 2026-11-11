@@ -8,6 +8,20 @@ In the session, the trainer turns it into CampusBite (an SRM canteen ordering ag
 - Database: run `seed/00_starter_example.sql`, then `seed/campusbite.sql` in Supabase
 - AI rules: `.github/copilot-instructions.md` (Copilot) and `CLAUDE.md` (Claude Code)
 
+## How the agent works
+
+1. The API route sends the chat messages and the list of 6 tools (`getMenu`, `getWalletBalance`, `getPickupSlots`, `getMyOrders`, `placeOrder`, `cancelOrder`) to Gemini, along with the system prompt.
+2. Gemini asks for a tool with arguments. Our code checks those arguments with Zod and then runs the tool against Supabase. Gemini never touches the database itself.
+3. The tool result goes back to Gemini, and this repeats until Gemini gives a final answer (at most 8 rounds, see `lib/agent/runAgent.ts`).
+
+Orders are placed and cancelled only through the database functions `place_order` and `cancel_order`. They check balance, stock, slot capacity and the 5-item limit, and change everything together or nothing.
+
+## Screens
+
+- `/`: the student screen with the agent chat, wallet and my orders, and today's menu with live stock
+- `/kitchen`: the kitchen board with New orders, Preparing and Ready for pickup
+- `/api/health`: settings and database check
+
 ---
 
 # SRM Agentic AI Hackathon: Starter Template
